@@ -1,0 +1,373 @@
+package org.example.javafx_calculator;
+
+public class Calculator {
+    private double op1;
+    private double op2;
+    private char operator;
+    private double result;
+    private boolean isError;
+
+    public double getOp1() {
+        return op1;
+    }
+
+    public void setOp1(double op1) {
+        this.op1 = op1;
+    }
+
+    public double getOp2() {
+        return op2;
+    }
+
+    public void setOp2(double op2) {
+        this.op2 = op2;
+    }
+
+    public char getOperator() {
+        return operator;
+    }
+
+    public void setOperator(char operator) {
+        this.operator = operator;
+    }
+
+    public double getResult() {
+        return result;
+    }
+
+    public boolean isError() {
+        return isError;
+    }
+
+    public void calculate() {
+        isError = false;
+        switch (operator) {
+            case '+':
+                result = op1 + op2;
+                break;
+            case '-':
+                result = op1 - op2;
+                break;
+            case '*':
+                result = op1 * op2;
+                break;
+            case '%':
+                result = op1 * 0.01;
+                break;
+            case '√':
+                if (op1 < 0) {
+                    isError = true;
+                    result = 0;
+                } else {
+                    result = Math.sqrt(op1);
+                }
+                break;
+            case '±':
+                result = -op1;
+                break;
+            case '/':
+                if (op2 == 0) {
+                    isError = true;
+                    result = 0;
+                } else {
+                    result = op1 / op2;
+                }
+                break;
+            default:
+                isError = true;
+                result = 0;
+                break;
+        }
+    }
+
+    public void reset() {
+        op1 = 0;
+        op2 = 0;
+        operator = '\0';
+        result = 0;
+        isError = false;
+    }
+}
+ackage org.example.javafx_calculator;
+
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+
+public class CalculatorApplication extends Application {
+    @Override
+    public void start(Stage stage) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(CalculatorApplication.class.getResource("calculator.fxml"));
+        Scene scene = new Scene(fxmlLoader.load());
+        stage.setTitle("Simple Calculator");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    public static void main(String[] args) {
+        launch();
+    }
+}
+ackage org.example.javafx_calculator;
+
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+
+public class CalculatorController {
+    Calculator calc = new Calculator();
+    @FXML
+    private TextField text;
+    private boolean isCalculationComplete = false;
+    private boolean isErrorDisplayed = false;
+
+    @FXML
+    private void onClick1() {
+        handleDigit("1");
+    }
+
+    @FXML
+    private void onClick2() {
+        handleDigit("2");
+    }
+
+    @FXML
+    private void onClick3() {
+        handleDigit("3");
+    }
+
+    @FXML
+    private void onClick4() {
+        handleDigit("4");
+    }
+
+    @FXML
+    private void onClick5() {
+        handleDigit("5");
+    }
+
+    @FXML
+    private void onClick6() {
+        handleDigit("6");
+    }
+
+    @FXML
+    private void onClick7() {
+        handleDigit("7");
+    }
+
+    @FXML
+    private void onClick8() {
+        handleDigit("8");
+    }
+
+    @FXML
+    private void onClick9() {
+        handleDigit("9");
+    }
+
+    @FXML
+    private void onClick0() {
+        handleDigit("0");
+    }
+
+    private void handleDigit(String digit) {
+        if (isErrorDisplayed) {
+            return; // Если ошибка отображена, не позволяем вводить цифры
+        }
+        if (isCalculationComplete) {
+            text.setText("");
+            isCalculationComplete = false;
+        }
+        String val = text.getText();
+        val += digit;
+        text.setText(val);
+    }
+
+//    @FXML
+//    private void onClick1() {
+//        String val = text.getText();
+//        val = val + "1";
+//        text.setText(val);
+//    }
+
+//    @FXML
+//    private void onClickPlus() {
+//        String val = text.getText();
+//        calc.setOp1(Integer.parseInt(val));
+//        calc.setOperator('+');
+//        text.setText("");
+//    }
+
+    @FXML
+    private void onClickPlus() {
+        handleOperator('+');
+    }
+
+    @FXML
+    private void onClickMinus() {
+        handleOperator('-');
+    }
+
+    @FXML
+    private void onClickMultiply() {
+        handleOperator('*');
+    }
+
+    @FXML
+    private void onClickDivide() {
+        handleOperator('/');
+    }
+
+    private void handleOperator(char operator) {
+        if (isErrorDisplayed) {
+            return; // Не позволяем вводить операторы при отображении ошибки
+        }
+
+        String val = text.getText();
+
+        if (!val.isEmpty()) {
+            calc.setOp1(Double.parseDouble(val));
+            calc.setOperator(operator);
+            text.setText("");
+        }
+    }
+
+    @FXML
+    private void onClickEqual() {
+        if (isErrorDisplayed) {
+            return; // Не позволяем выполнять расчет, пока отображена ошибка
+        }
+        String val = text.getText();
+        try {
+            if (calc.getOperator() != '\0' && !val.isEmpty()) {
+                calc.setOp2(Double.parseDouble(val));
+                calc.calculate();
+                if (calc.isError()) {
+                    Alert a = new Alert(Alert.AlertType.ERROR);
+                    a.setTitle("Error");
+                    a.setHeaderText(null); // Можно убрать заголовок
+                    a.setContentText("Division by zero is not allowed. Please clear the calculator to proceed.");
+                    a.show();
+                    isErrorDisplayed = true;
+                } else {
+                    double result = calc.getResult();
+                    // Если результат является целым числом, выводим его как целое число
+                    if (result == (int) result) {
+                        text.setText(String.valueOf((int) result));
+                    } else {
+                        text.setText(String.valueOf(result));
+                    }
+                    isCalculationComplete = true;
+                }
+                calc.reset();
+            }
+        } catch (NumberFormatException e) {
+            text.setText("Error");
+            isErrorDisplayed = true;
+        }
+    }
+
+    @FXML
+    private void onClickClear() {
+        calc.reset();
+        text.setText("");
+        isCalculationComplete = false;
+        isErrorDisplayed = false;
+    }
+
+    @FXML
+    private void onClickDot() {
+        if (isErrorDisplayed) {
+            return; // Не позволяем вводить точки при отображении ошибки
+        }
+        String currentText = text.getText();
+
+        // Проверка на наличие точки в текущем операнде
+        if (currentText.contains(".")) {
+            return; // если точка уже есть, ничего не делаем
+        }
+
+        // Если строка пустая, добавляем "0."
+        if (currentText.isEmpty()) {
+            text.setText("0.");
+        } else {
+            // Иначе добавляем точку к текущему числу
+            text.setText(currentText + ".");
+        }
+    }
+
+    @FXML
+    private void onClickSquareRoot() {
+        if (isErrorDisplayed) {
+            return; // Не позволяем выполнять операцию при отображении ошибки
+        }
+        String val = text.getText();
+        if (!val.isEmpty()) {
+            calc.setOp1(Double.parseDouble(val));
+            calc.setOperator('√');
+            calc.calculate(); // Выполняем расчет сразу
+            if (calc.isError()) {
+                text.setText("Error");
+                isErrorDisplayed = true; // Устанавливаем флаг ошибки
+            } else {
+                displayResult(calc.getResult());
+                isCalculationComplete = true;
+            }
+        }
+    }
+
+    @FXML
+    private void onClickPlusMinus() {
+        if (isErrorDisplayed) {
+            return; // Не позволяем выполнять операцию при отображении ошибки
+        }
+        String val = text.getText();
+        if (!val.isEmpty()) {
+            calc.setOp1(Double.parseDouble(val));
+            calc.setOperator('±');
+            calc.calculate(); // Выполняем расчет сразу
+            if (calc.isError()) {
+                text.setText("Error");
+                isErrorDisplayed = true; // Устанавливаем флаг ошибки
+            } else {
+                displayResult(calc.getResult());
+                isCalculationComplete = true;
+            }
+        }
+    }
+
+    @FXML
+    private void onClickPercentage() {
+        if (isErrorDisplayed) {
+            return; // Не позволяем выполнять операцию при отображении ошибки
+        }
+        String val = text.getText();
+        if (!val.isEmpty()) {
+            calc.setOp1(Double.parseDouble(val));
+            calc.setOperator('%');
+            calc.calculate(); // Выполняем расчет сразу
+            if (calc.isError()) {
+                text.setText("Error");
+                isErrorDisplayed = true; // Устанавливаем флаг ошибки
+            } else {
+                displayResult(calc.getResult());
+                isCalculationComplete = true;
+            }
+        }
+    }
+
+    // Вспомогательный метод для вывода результата
+    private void displayResult(double result) {
+        if (result == (int) result) {
+            text.setText(String.valueOf((int) result));
+        } else {
+            text.setText(String.valueOf(result));
+        }
+    }
+
+}
